@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Private Message 💕</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #FFE5EC 0%, #FFF0F5 50%, #FFE5EC 100%);
+            min-height: 100vh;
+            overflow: hidden; 
+            position: relative;
+        }
+
+        /* Password Overlay */
+        #passwordOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 229, 236, 0.98);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .password-box {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(255, 105, 180, 0.2);
+            border: 2px solid #FFB6C1;
+        }
+
+        .password-box h2 {
+            color: #FF1493;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .password-box input {
+            padding: 12px;
+            width: 220px;
+            border: 2px solid #FFB6C1;
+            border-radius: 10px;
+            outline: none;
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .password-box button {
+            background: #FF1493;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Main Content */
+        #mainContent {
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        body::before {
+            content: "💕 💋 💕 💋 💕 💋 💕 💋";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            font-size: 3em;
+            color: rgba(255, 105, 180, 0.2);
+            animation: floatEmojis 15s linear infinite;
+            z-index: -1;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        @keyframes floatEmojis {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-50px); }
+            100% { transform: translateY(0); }
+        }
+
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        .page.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .envelope-container { text-align: center; display: flex; flex-direction: column; gap: 30px; }
+        .envelope {
+            width: 320px; height: 220px; background: #FFB6C1; border-radius: 12px;
+            position: relative; box-shadow: 0 15px 40px rgba(255, 105, 180, 0.3);
+        }
+        .envelope::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 0; height: 0;
+            border-left: 160px solid transparent; border-right: 160px solid transparent;
+            border-top: 110px solid #FF69B4; transform-origin: top; transition: transform 0.8s ease;
+        }
+        .envelope.open::before { transform: rotateX(180deg); }
+        .open-button {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #FF69B4, #FF1493); color: white;
+            border: none; padding: 16px 36px; font-size: 1.2em; border-radius: 40px;
+            cursor: pointer; font-weight: bold;
+        }
+
+        .content-container {
+            max-width: 850px; width: 100%; background: white; border-radius: 25px;
+            padding: 45px; box-shadow: 0 15px 50px rgba(255, 105, 180, 0.2); position: relative;
+        }
+
+        h1, h2 { text-align: center; color: #FF1493; margin-bottom: 25px; }
+        .hearts { text-align: center; font-size: 3em; margin: 20px 0; }
+
+        .photo-frame {
+            width: 260px; height: 260px; border-radius: 50%; overflow: hidden;
+            margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;
+            border: 5px solid #FFE5EC;
+        }
+        .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+        .photo-text {
+            background: #FFF0F5; padding: 25px; border-radius: 20px; border: 2px solid #FFB6C1;
+            line-height: 1.8; text-align: center;
+        }
+
+        .letter-content {
+            line-height: 2; font-size: 1.05em; color: #333; max-height: 400px;
+            overflow-y: auto; padding-right: 10px;
+        }
+
+        .signature { margin-top: 35px; text-align: right; font-style: italic; font-size: 1.3em; color: #FF1493; }
+
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 30px; gap: 15px; }
+        .nav-button {
+            background: linear-gradient(135deg, #FF69B4, #FF1493); color: white;
+            border: none; padding: 14px 30px; border-radius: 30px; font-size: 1em;
+            cursor: pointer; font-weight: bold;
+        }
+        .nav-button:disabled { background: #ddd; cursor: not-allowed; }
+
+        #qrCode { display: flex; justify-content: center; margin: 20px 0; }
+    </style>
+</head>
+
+<body>
+
+    <div id="passwordOverlay">
+        <div class="password-box">
+            <h2>Enter Secret Code 💕</h2>
+            <input type="password" id="passInput" placeholder="Password...">
+            <br>
+            <button onclick="checkPassword()">Unlock My Heart</button>
+            <p id="errorMsg" style="color: red; margin-top: 10px; display: none;">Wrong code, try again!</p>
+        </div>
+    </div>
+
+    <div id="mainContent">
+        <audio id="bgMusic" loop>
+            <source src="image/song.mp3" type="audio/mpeg">
+        </audio>
+
+        <div class="page active" id="page0">
+            <div class="envelope-container">
+                <div class="envelope" id="envelope">
+                    <button class="open-button" onclick="openEnvelope()">Open My Heart 💕</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page1">
+            <div class="content-container">
+                <h1>Happy Valentine's Day, My Love!</h1>
+                <div class="hearts">💕 ❤️ 💕</div>
+                <div class="nav-buttons">
+                    <button class="nav-button" disabled>Previous</button>
+                    <button class="nav-button" onclick="nextPage()">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page2">
+            <div class="content-container">
+                <h1>Love You Forever, Adedunmola 💕</h1>
+                <div class="photo-frame">
+                    <img src="image/couple.jpg" alt="Couple Photo">
+                </div>
+                <div class="photo-text">Every moment with you is a treasure I hold close to my heart.</div>
+                <div class="nav-buttons">
+                    <button class="nav-button" onclick="prevPage()">Previous</button>
+                    <button class="nav-button" onclick="nextPage()">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page3">
+            <div class="content-container">
+                <h2>My Letter to You</h2>
+                <div class="letter-content">
+                    <p>To the love of my life, Adedunmola.</p>
+                    <p>I feel like sometimes you really don’t know what’s coming for you in life. You don’t know who’s going to walk in. You don’t know who’s going to change you. Things just happen. People just happen. And you Adedunmola Ifemii🥺 happened to me. You happened to my life in a way I never could’ve planned for or explained even if I tried.</p>
+                    <p>It’s just like, one day I was just living, just existing, and then somehow loving you became part of my life. Part of me. Like it was always waiting to happen. And I’m honestly so grateful for that. Grateful for you. Grateful for how loving you has shaped me and taught me things I didn’t even know I needed to learn.</p>
+                    <p>You know when you meet someone and you just know they’re going to change your life. And you did. You proved it to me again and again. Even on the days you weren’t there. Even when there was space, silence, or even days in between. Somehow your impact never left. It stayed beautiful. It stayed positive. You, Adedunmola changed me in ways that actually matter.</p>
+                    <p>And I think that’s one of the most beautiful things about you. The way you can exist in someone’s life even when you’re not physically there. The way your presence lingers. The way loving you continues to do something to me, even from a distance.</p>
+                    <p>I feel like loving you taught me what love is actually supposed to be. That it’s not about fighting each other. That the intent was never to hurt. That we’re just human, trying to understand ourselves and each other. That when something goes wrong, it’s not you vs me it’s us vs the problem. We’re a team. We’re supposed to be a team. I believe that with my whole heart.</p>
+                    <p>Adedunmola, I love you for you…and not just the idea of you, Not just the easy moments. I love you when you’re just being you. You’re not perfect and I don’t need you to be. You are amazing. You are awesome. Ifemi, you are beauty to me. When I look at you, I only ever see beauty in you. Just beautiful inside and out..</p>
+                    <p>I love how deeply you feel. I love how real you are. I love how you are just you how you don’t shrink yourself to be loved easier. Even when it’s messy. Even when it’s hard. You are so real and I admire your authenticity. And I will forever love you for it🥺</p>
+                    <p>And guess what?? I actually love love. I really do. I love what love does to you when you let it. When you let it make you vulnerable. When you let it tend to you and care for you. When you stop being scared and just trust it. Love makes you raw. It makes you real. It makes you open. Even on the days we don’t speak, the love i have for you in my heart convinces me that we will get through whatever it is that is happening.</p>
+                    <p>I love how even on my worst days, I was met with gentleness from you. With kindness. Parts of me I thought would only ever be met with anger or judgment were met with care instead. And somehow, I was embraced even more. That still amazes me. That’s beautiful. Thank you for being patient with me.. thank you for taking care of my heart.</p>
+                    <p>And genuinely, Adedunmola, I love you despite, regardless I love your whole being, I love you with everything that is wrong and right with you. I love you so much and I’m not just saying it, It is certain, your love is deeply rooted in my heart I feel it, the way you just cross my mind without me trying…hmmm you are mine. Not in a possessive way. Or maybe in a possessive way actually..but yeah more of like “my heart knows you” kind of way.</p>
+                    <p>Hmmm… my sweet Angel, Adedunmola teminikan🥺, how I love loving you. I love choosing you. I love caring for you. I love wanting to protect your heart, not change it. I love who you are and I love who you’re becoming.</p>
+                    <p>Deep down in me, I feel like loving you has always been part of my purpose. Adedunmola mi, I will always feel committed to loving you, caring for you and protecting your heart and even if I had to choose again I’d still choose you.🥺 We will be okay my love, I’m always with you and you are always in my heart, no matter the distance or whatever happens you will always be MINE, and I will always be YOURS. My Queen and more, please permit me to stop here.😘😘😘</p>
+                    <p class="signature">With Love, Sunmisola.</p>
+                </div>
+                <div class="nav-buttons">
+                    <button class="nav-button" onclick="prevPage()">Previous</button>
+                    <button class="nav-button" onclick="nextPage()">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page4">
+            <div class="content-container">
+                <h1>Scan link below to know how I feel about you 🎵</h1>
+                <div id="qrCode"></div>
+                <div class="nav-buttons">
+                    <button class="nav-button" onclick="prevPage()">Previous</button>
+                    <button class="nav-button" onclick="nextPage()">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page5">
+            <div class="content-container">
+                <div class="photo-frame">
+                    <img src="image/selfie.jpg" alt="Second Photo">
+                </div>
+                <div class="photo-text" style="text-align:center;">Am i still your baby or you've found another baby? 😏💕</div>
+                <div class="nav-buttons">
+                    <button class="nav-button" onclick="prevPage()">Previous</button>
+                    <button class="nav-button" onclick="goToStart()">Start Over 💕</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script>
+        const hash = "QHlvdQ=="; // Encoded "@you"
+
+        function checkPassword() {
+            const input = document.getElementById("passInput").value;
+            if (btoa(input) === hash) {
+                document.getElementById("passwordOverlay").style.opacity = "0";
+                setTimeout(() => {
+                    document.getElementById("passwordOverlay").style.display = "none";
+                    document.getElementById("mainContent").style.display = "block";
+                    document.body.style.overflow = "auto";
+                    setTimeout(() => {
+                        document.getElementById("mainContent").style.opacity = "1";
+                    }, 50);
+                }, 500);
+            } else {
+                document.getElementById("errorMsg").style.display = "block";
+            }
+        }
+
+        document.getElementById("passInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") { checkPassword(); }
+        });
+
+        let currentPage = 0;
+        function showPage(page) {
+            document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+            document.getElementById("page" + page).classList.add("active");
+            currentPage = page;
+            window.scrollTo(0, 0);
+        }
+        function openEnvelope() {
+            document.getElementById("envelope").classList.add("open");
+            document.getElementById("bgMusic").play().catch(e => console.log("Audio play deferred"));
+            setTimeout(() => showPage(1), 800);
+        }
+        function nextPage() {
+            if (currentPage < 5) showPage(currentPage + 1);
+            if (currentPage === 4) generateQRCode();
+        }
+        function prevPage() { if (currentPage > 0) showPage(currentPage - 1); }
+        function goToStart() { document.getElementById("envelope").classList.remove("open"); showPage(0); }
+
+        function generateQRCode() {
+            // Your real Spotify link is here
+            const url = "https://open.spotify.com/track/0Xb4PzuypU9nXZBQjq9oHv?si=cdIrWgycTNWyiZvuNtwJwA"; 
+            const qrContainer = document.getElementById("qrCode");
+            qrContainer.innerHTML = "";
+            QRCode.toCanvas(url, { width: 200, color: { dark: '#FF1493', light: '#FFFFFF' } }, function (error, canvas) {
+                if (error) console.error(error);
+                qrContainer.appendChild(canvas);
+            });
+        }
+    </script>
+</body>
+</html>
